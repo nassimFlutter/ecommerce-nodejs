@@ -5,6 +5,10 @@ const Brand = require('../models/brand');
 
 const ApiError = require('../utils/ApiError');
 
+const ApiFeatures = require('../utils/api_features');
+
+const factory = require('./handlers_factory');
+
 exports.setCategoryIdToBody = (req, res, next) => {
     if (!req.body.category) req.body.category = req.params.categoryId;
     next();
@@ -34,14 +38,18 @@ exports.createBrand = asyncHandler(async (req, res, next) => {
 // @ route '/api/v1/subcategory
 // @ access Public 
 exports.getBrands = asyncHandler(async (req, res, next) => {
-    const { page } = req.query.page * 1 || 1;
-    const { limit } = req.query.limit * 1 || 1;
-    const skip = (page - 1) * limit;
+    const countOfDocuments = await Brand.countDocuments();
+    const apiFeatures = new ApiFeatures(Brand.find(), req.query)
+        .search()
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate(countOfDocuments);
 
+    const { mongooseQuery, paginationResult } = apiFeatures;
 
-
-    const subcategories = await Brand.find(req.filterObject).skip(skip).limit(limit);
-    res.status(200).json({ result: subcategories.length, page, data: subcategories });
+    const brands = await mongooseQuery;
+    res.status(200).json({ result: brands.length, paginationResult, data: brands });
 
 });
 // @ dec get specific subcategory
@@ -86,15 +94,7 @@ exports.updateBrand = asyncHandler(async (req, res, next) => {
 // @ dec delete  brand
 // @ route '/api/v1/brand
 // @ access private 
-exports.deleteBrand = asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-    const brand = await Brand.findByIdAndDelete(id);
-
-    if (!brand) {
-        return next(new ApiError(`No Sub Category for this ${id}`, 404));
-    }
-    res.status(204).send();
-});
+exports.deleteBrand = factory.deleteOne(Brand);
 // @ dec delete all categories
 // @ route '/api/v1/brand
 // @ access private 

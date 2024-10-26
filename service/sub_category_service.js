@@ -7,6 +7,10 @@ const SubCategory = require('../models/sub_category');
 
 const ApiError = require('../utils/ApiError');
 
+const ApiFeatures = require('../utils/api_features');
+
+const factory = require('./handlers_factory');
+
 exports.setCategoryIdToBody = (req, res, next) => {
     if (!req.body.category) req.body.category = req.params.categoryId;
     next();
@@ -36,14 +40,18 @@ exports.createSubCategory = asyncHandler(async (req, res, next) => {
 // @ route '/api/v1/subcategory
 // @ access Public 
 exports.getSubCategories = asyncHandler(async (req, res, next) => {
-    const { page } = req.query.page * 1 || 1;
-    const { limit } = req.query.limit * 1 || 1;
-    const skip = (page - 1) * limit;
+    const countOfDocuments = await SubCategory.countDocuments();
+    const apiFeatures = new ApiFeatures(SubCategory.find(), req.query)
+        .search()
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate(countOfDocuments);
 
+    const { mongooseQuery, paginationResult } = apiFeatures;
 
-
-    const subcategories = await SubCategory.find(req.filterObject).skip(skip).limit(limit).populate({ path: "category", select: 'name -_id' });
-    res.status(200).json({ result: subcategories.length, page, data: subcategories });
+    const subcategories = await mongooseQuery;
+    res.status(200).json({ result: subcategories.length, paginationResult, data: subcategories });
 
 });
 // @ dec get specific subcategory
@@ -89,15 +97,7 @@ exports.updateSubCategory = asyncHandler(async (req, res, next) => {
 // @ dec delete  sub categories
 // @ route '/api/v1/subcategory
 // @ access private 
-exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-    const subCategory = await SubCategory.findByIdAndDelete(id);
-
-    if (!subCategory) {
-        return next(new ApiError(`No Sub Category for this ${id}`, 404));
-    }
-    res.status(204).send();
-});
+exports.deleteSubCategory = factory.deleteOne(SubCategory);
 // @ dec delete all categories
 // @ route '/api/v1/subcategory
 // @ access private 

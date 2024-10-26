@@ -7,7 +7,11 @@ const Product = require('../models/product');
 const ApiError = require('../utils/ApiError');
 
 const ApiFeatures = require('../utils/api_features');
+
 const product = require('../models/product');
+
+const factory = require('./handlers_factory');
+
 
 // exports.setCategoryIdToBody = (req, res, next) => {
 //     if (!req.body.category) req.body.category = req.params.categoryId;
@@ -37,9 +41,9 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
 // @ route '/api/v1/subcategory
 // @ access Public 
 exports.getProducts = asyncHandler(async (req, res, next) => {
-    const countOfDocuments = await Product.countDocuments(); 
+    const countOfDocuments = await Product.countDocuments();
     const apiFeatures = new ApiFeatures(Product.find(), req.query)
-        .search()
+        .search("Products")
         .filter()
         .sort()
         .limitFields()
@@ -48,7 +52,7 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
     // Ensure apiFeatures has mongooseQuery and paginationResult
     const { mongooseQuery, paginationResult } = apiFeatures;
 
-    const products = await mongooseQuery; 
+    const products = await mongooseQuery;
 
     res.status(200).json({
         count: products.length,
@@ -97,15 +101,7 @@ exports.updateSubCategory = asyncHandler(async (req, res, next) => {
 // @ dec delete  sub categories
 // @ route '/api/v1/subcategory
 // @ access private 
-exports.deleteProduct = asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-    const product = await Product.findByIdAndDelete(id);
-
-    if (!product) {
-        return next(new ApiError(`No Sub Category for this ${id}`, 404));
-    }
-    res.status(204).send();
-});
+exports.deleteProduct = factory.deleteOne(Product);
 // @ dec delete all categories
 // @ route '/api/v1/subcategory
 // @ access private 

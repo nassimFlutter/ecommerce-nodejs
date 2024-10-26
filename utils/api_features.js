@@ -5,23 +5,22 @@ class ApiFeatures {
         this.paginationResult = {}; // Initialize paginationResult
     }
 
-    search() {
-        // Check if 'keyword' is present in the query
+    search(modelName) {
         if (this.queryString.keyword) {
-            const keyword = this.queryString.keyword;
-            const regex = new RegExp(keyword, 'i'); // Create a case-insensitive regex
+            let query = {};
+            if (modelName === 'Products') {
+                query.$or = [
+                    { title: { $regex: this.queryString.keyword, $options: 'i' } },
+                    { description: { $regex: this.queryString.keyword, $options: 'i' } },
+                ];
+            } else {
+                query = { name: { $regex: this.queryString.keyword, $options: 'i' } };
+            }
 
-            // Build the query using the regex in an $or clause
-            this.mongooseQuery = this.mongooseQuery.find({
-                $or: [
-                    { title: regex },
-                    { description: regex }
-                ]
-            });
+            this.mongooseQuery = this.mongooseQuery.find(query);
         }
-        return this; // Allow chaining
+        return this;
     }
-
     filter() {
         const queryObj = { ...this.queryString }; // Clone query string
         const excludedFields = ['sort', 'limit', 'fields', 'page', 'keyword']; // Exclude these fields

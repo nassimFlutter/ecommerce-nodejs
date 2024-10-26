@@ -3,6 +3,8 @@
 const Category = require('../models/category');
 const mongoose = require('mongoose');
 const slugify = require('slugify')
+const factory = require('./handlers_factory');
+
 //@desc add category 
 //@route post  /add-category
 //@access private
