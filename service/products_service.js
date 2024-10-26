@@ -6,6 +6,9 @@ const Product = require('../models/product');
 
 const ApiError = require('../utils/ApiError');
 
+const ApiFeatures = require('../utils/api_features');
+const product = require('../models/product');
+
 // exports.setCategoryIdToBody = (req, res, next) => {
 //     if (!req.body.category) req.body.category = req.params.categoryId;
 //     next();
@@ -34,13 +37,26 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
 // @ route '/api/v1/subcategory
 // @ access Public 
 exports.getProducts = asyncHandler(async (req, res, next) => {
-    const { page } = req.query.page * 1 || 1;
-    const { limit } = req.query.limit * 1 || 1;
-    const skip = (page - 1) * limit;
-    const product = await Product.find().skip(skip).limit(limit);
-    res.status(200).json({ result: product.length, page, data: product });
+    const countOfDocuments = await Product.countDocuments(); 
+    const apiFeatures = new ApiFeatures(Product.find(), req.query)
+        .search()
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate(countOfDocuments);
 
+    // Ensure apiFeatures has mongooseQuery and paginationResult
+    const { mongooseQuery, paginationResult } = apiFeatures;
+
+    const products = await mongooseQuery; 
+
+    res.status(200).json({
+        count: products.length,
+        paginationInfo: paginationResult,
+        data: products,
+    });
 });
+
 // @ dec get specific subcategory
 // @ route /api/v1/subcategory/:id
 // @ public
@@ -76,7 +92,7 @@ exports.updateSubCategory = asyncHandler(async (req, res, next) => {
     }
     res.status(200).json({ data: product });
 
-    
+
 });
 // @ dec delete  sub categories
 // @ route '/api/v1/subcategory
