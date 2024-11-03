@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
+// Load environment variables
+dotenv.config({ path: 'config.env' });
 const categorySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -17,12 +20,33 @@ const categorySchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
-}, {
-  timestamps: true
+  },
+  image: String,
 },
 
+
+
+  {
+    timestamps: true
+  },
+
 );
+
+const setImageURL = (doc) => {
+  if (doc.image) {
+    const imageUrl = `${process.env.BASE_URL}/categories/${doc.image}`;
+    doc.image = imageUrl;
+  }
+};
+// findOne, findAll and update
+categorySchema.post('init', (doc) => {
+  setImageURL(doc);
+});
+
+// create
+categorySchema.post('save', (doc) => {
+  setImageURL(doc);
+});
 
 
 

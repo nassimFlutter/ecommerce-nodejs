@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 const userRoutes = require('./routes/userRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
+const categoryRoutes = require('./routes/category_routes');
 const ApiError = require('./utils/ApiError');
 const globalError = require('./middlewares/errorMiddleware');
 const subCategoryRoute = require('./routes/sub_category_route');
@@ -33,17 +33,29 @@ if (process.env.NODE_ENV === 'development') {
 
 // Parse JSON request bodies
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'uploads')));
 
 // Define API routes
 app.use('/api/v1', userRoutes);
-app.use('/api/v1', categoryRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/subcategories', subCategoryRoute);
 app.use('/api/v1/brand', brandRoute);
 app.use("/api/v1/products", productRoute);
 
 // Root route
 app.get('/', (req, res) => {
-  res.send("Our API v1");
+  res.status(200).json({
+    message: "Welcome To E-commerce App",
+    version: "1.0.0",
+    author: "Nassim soliman",
+    contact: "nassimsoliman22@gmail.com",
+    baseUrl: process.env.BASE_URL,
+    links: {
+      github:
+        "https://github.com/nassimFlutter/ecommerce-nodejs"
+
+    }
+  });
 });
 
 // Handle undefined routes (404 errors)

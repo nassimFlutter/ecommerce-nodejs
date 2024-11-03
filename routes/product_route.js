@@ -3,7 +3,7 @@ const {
     getProducts,
     createProduct,
     getOneProduct,
-    updateSubCategory,
+    updateProduct,
     deleteProduct,
     deleteAllProducts,
 } = require('../service/products_service');  // Correct path to service
@@ -20,7 +20,7 @@ router.route('/')
 
 router.route('/:id')
     .get(getOneProduct)              // Retrieve a single product by ID
-    .put(updateSubCategory)          // Update a product
+    .put(updateProduct)          // Update a product
     .delete(deleteProduct);          // Delete a product
 
 router.route('/deleteAll')

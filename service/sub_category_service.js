@@ -30,12 +30,7 @@ exports.setFilterObject = (req, res, next) => {
 // @ dec create  sub categories
 // @ route '/api/v1/subcategory
 // @ access private 
-exports.createSubCategory = asyncHandler(async (req, res, next) => {
-
-    const { name, category } = req.body;
-    const subCategory = await SubCategory.create({ name, slug: slugify(name), category });
-    res.status(201).json({ data: subCategory });
-});
+exports.createSubCategory = factory.createOne(SubCategory);
 // @ dec get list of sub categories
 // @ route '/api/v1/subcategory
 // @ access Public 
@@ -66,34 +61,9 @@ exports.getSubCategory = asyncHandler(async (req, res, next) => {
     res.status(200).json({ data: subCategory });
 });
 // @ dec update  sub categories
-// @ route '/api/v1/subcategory
+// @ route '/api/v1/subcategory/id
 // @ access private 
-exports.updateSubCategory = asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-    const { name, category } = req.body;
-    const subCategory = await SubCategory.findByIdAndUpdate(
-
-        { _id: id },
-        {
-            name, slug: slugify(name),
-
-            category
-        }
-        ,
-        {
-
-            new: true,
-        }
-
-    );
-    if (!subCategory) {
-        return next(new ApiError(`No Sub Category for this ${id}`, 404));
-
-    }
-    res.status(200).json({ data: subCategory });
-
-
-});
+exports.updateSubCategory = factory.updateOne(SubCategory);
 // @ dec delete  sub categories
 // @ route '/api/v1/subcategory
 // @ access private 

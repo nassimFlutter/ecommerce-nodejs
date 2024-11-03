@@ -7,7 +7,17 @@ const ApiError = require('../utils/ApiError');
 
 const ApiFeatures = require('../utils/api_features');
 
+const { uploadSingleImage } = require('../middlewares/upload_single_image_muddleware');
+
+
+const multer = require('multer')
+
+const { v4: uuidv4 } = require('uuid');
+
+const sharp = require('sharp');
+
 const factory = require('./handlers_factory');
+
 
 exports.setCategoryIdToBody = (req, res, next) => {
     if (!req.body.category) req.body.category = req.params.categoryId;
@@ -25,15 +35,31 @@ exports.setFilterObject = (req, res, next) => {
     next();
 
 };
+
+
+exports.uploadBrandImage = uploadSingleImage('image');
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+    const filename = `brand-${uuidv4()}-${Date.now()}.jpeg`;
+
+    await sharp(req.file.buffer)
+        .resize(600, 600)
+        .toFormat('jpeg')
+        .jpeg({ quality: 95 })
+        .toFile(`uploads/brands/${filename}`);
+
+    // Save image into our db 
+    req.body.image = filename;
+    console.log(req.body.image);
+
+
+    next();
+});
+
+
 // @ dec create  brand
 // @ route '/api/v1/brand
 // @ access private 
-exports.createBrand = asyncHandler(async (req, res, next) => {
-
-    const { name } = req.body;
-    const brand = await Brand.create({ name, slug: slugify(name) });
-    res.status(201).json({ data: brand });
-});
+exports.createBrand = factory.createOne(Brand);
 // @ dec get list of sub categories
 // @ route '/api/v1/subcategory
 // @ access Public 
