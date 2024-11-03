@@ -6,6 +6,9 @@ const {
     updateProduct,
     deleteProduct,
     deleteAllProducts,
+    resizedProductImage,
+    uploadProductImages
+
 } = require('../service/products_service');  // Correct path to service
 
 // Corrected name for the validation middleware import
@@ -16,11 +19,18 @@ const router = express.Router({ mergeParams: true });
 // Routes for handling products
 router.route('/')
     .get(getProducts)                // Retrieve all products
-    .post(createProductValidator, createProduct);  // Use correct validator name to create a new product
+    .post(
+        uploadProductImages,
+        resizedProductImage,
+        createProductValidator,
+        createProduct);  // Use correct validator name to create a new product
 
 router.route('/:id')
     .get(getOneProduct)              // Retrieve a single product by ID
-    .put(updateProduct)          // Update a product
+    .put(
+        uploadProductImages,
+        resizedProductImage,
+        updateProduct)          // Update a product
     .delete(deleteProduct);          // Delete a product
 
 router.route('/deleteAll')
